@@ -33,7 +33,7 @@
      // toString method (for debugging)
      @Override
      public String toString() {
-         return "ITEM{" +
+         return "\n\n---------------------ITEM DATA----------------------" +
                  "\nRoom Location: " + itemId +
                  "\nItem Name: " + itemName +
                  "\nItem Description: " + itemDescription +

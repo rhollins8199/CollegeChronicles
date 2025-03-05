@@ -46,7 +46,7 @@
  
      @Override
      public String toString() {
-         return "\n\n-------------------------------------------" +
+         return "\n\n---------------------PUZZLE DATA----------------------" +
                  "\nRoom ID: " + roomId +
                  "\nPuzzle Type: " + puzzleType +
                  "\nPuzzle Question: " + puzzleQuestion +

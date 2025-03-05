@@ -45,15 +45,15 @@
      // toString method (for debugging)
      @Override
      public String toString() {
-         return "ROOM{" +
-                 "Id: " + roomId +
-                 ", Name: " + roomName +
-                 ", Has Visited:? " + hasVisited +
-                 ", Description: " + roomDescription +
-                 ", North Exit= " + northExit +
-                 ", East Exit= " + eastExit +
-                 ", South Exit= " + southExit +
-                 ", West Exit=" + westExit +
+         return "\n\n---------------------ROOM DATA----------------------" +
+                 "\nId: " + roomId +
+                 "\nName: " + roomName +
+                 "\nHas Visited:? " + hasVisited +
+                 "\nDescription: " + roomDescription +
+                 "\nNorth Exit= " + northExit +
+                 "\nEast Exit= " + eastExit +
+                 "\nSouth Exit= " + southExit +
+                 "\nWest Exit=" + westExit +
                  '}';
      }
  }
