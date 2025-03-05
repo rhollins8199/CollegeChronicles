@@ -1,0 +1,11 @@
+File Layout: roomID|itemName|itemDescription|itemCount
+
+1|Scantron|Scantrons are necessary for taking exams (requires 2) and quizzes (requires 1).|0
+2|Scantron|Scantrons are necessary for taking exams (requires 2) and quizzes (requires 1).|0
+3|Scantron|Scantrons are necessary for taking exams (requires 2) and quizzes (requires 1).|0
+4|Scantron|Scantrons are necessary for taking exams (requires 2) and quizzes (requires 1).|0
+7|Scantron|Scantrons are necessary for taking exams (requires 2) and quizzes (requires 1).|0
+8|Scantron|Scantrons are necessary for taking exams (requires 2) and quizzes (requires 1).|0
+9|Scantron|Scantrons are necessary for taking exams (requires 2) and quizzes (requires 1).|0
+10|Scantron|Scantrons are necessary for taking exams (requires 2) and quizzes (requires 1).|0
+11|Scantron|Scantrons are necessary for taking exams (requires 2) and quizzes (requires 1).|0
