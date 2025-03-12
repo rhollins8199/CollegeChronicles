@@ -72,6 +72,20 @@
              }
          }
      }
+
+     /**
+     * Get the count of items in a room.
+     * @param roomId
+     * @return itemCount
+     */
+    public int getItemCountInRoom(int roomId) {
+        for (Item item : items) {
+            if (item.getItemId() == roomId) {
+                return item.getItemCount();
+            }
+        }
+        return 0;
+    }
  
  }
  
