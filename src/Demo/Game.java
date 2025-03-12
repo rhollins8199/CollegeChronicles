@@ -13,6 +13,7 @@ import Controller.Controller;
 import Controller.Manager.CommandProcessor;
 import View.View;
 import Model.Player;
+import Model.Reader;
 
 import java.util.Scanner;
 public class Game {
@@ -21,6 +22,7 @@ public class Game {
         new Controller(
             new CommandProcessor(
                 new View(),
+                new Reader(),
                 new Scanner(System.in),
                 new Player(null, null)
             )
