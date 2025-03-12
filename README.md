@@ -49,6 +49,10 @@ Once you have cloned the repository, follow these steps to run the application:
 4. In the top-right corner, click the ▶ **Run Java** icon.
 5. In the game terminal will appear the game intro.
 
+<em>Screenshot</em>
+
+<img src="data/gameOpening.png" width="450" height="250">
+
 ## 🌟Future Version Ideas:
 - **Version 2**: Expaned on room and item features.
 - **Version 3**: Expanded gameplay with new features like obstacles.
