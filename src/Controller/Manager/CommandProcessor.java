@@ -4,7 +4,7 @@
  * Method categories:
  * 1. Game Initialization
  * 2. Command Processing
- * 3. Validation Methods
+ * 3. Command Validation Methods
  * 4. Handler Methods
  * 5. Utility Methods
  * 6. Movement Method
@@ -24,18 +24,23 @@ public class CommandProcessor {
     private static final String START_COMMAND = "start";
     private static final String EXIT_COMMAND = "exit";
     private final String[] VALID_MAIN_MENU_COMMANDS = { START_COMMAND, EXIT_COMMAND };
+    private final String[] VALID_MOVEMENT_COMMANDS = { "north", "n", "south", "s", "east", "e", "west", "w" };
     private static final String INVALID_MENU_COMMAND_MESSAGE = "\nInvalid command. Please enter 'start' or 'exit'.";
+    private static final String INVALID_COMMAND_MESSAGE = "\nInvalid command. Please enter 'h' for help.";
+    private static final String NO_EXIT_MESSAGE = "\nThere is no exit that way. Please enter 'h' for help.";
 
     // Dependencies
     private final View view;
     private final Scanner scanner;
     private final PlayersManager playersManager;
+    private final RoomsManager roomsManager;
 
      // Constructor
-     public CommandProcessor(View view, Scanner scanner, Player player) {
+     public CommandProcessor(View view, Reader reader, Scanner scanner, Player player) {
         this.view = view;
         this.scanner = scanner;
         this.playersManager = new PlayersManager(player);
+        this.roomsManager = new RoomsManager(reader.loadRoomsFromFile());
     }
 
     // User Input Tracking
@@ -83,11 +88,37 @@ public class CommandProcessor {
         promptForPlayerName();
         view.showWelcomeIntro();
         enterToContinue();
+        getStartingRoom();
+        userInput = getUserInput();
+        processPlayerCommand(userInput);
     }
 
     /* ========================== COMMAND PROCESSING ========================== */
 
-    /* ========================== VALIDATION METHODS ========================== */
+    /**
+     * Processes the command entered by the player.
+     * @param userInput
+     */
+    private void processPlayerCommand(String userInput) {
+
+        if (userInput.equals(EXIT_COMMAND)) { 
+            handleExitGame(); 
+        }  else if (java.util.Arrays.asList(VALID_MOVEMENT_COMMANDS).contains(userInput)) {
+            handleMovementCommand(userInput);
+        } else {
+            view.printError(INVALID_COMMAND_MESSAGE);
+        }
+
+        promptForPlayerCommand();
+    }
+
+    // Prompt for player command
+    private void promptForPlayerCommand() {
+        userInput = getUserInput();
+        processPlayerCommand(userInput);
+    }
+
+    /* ========================== COMMAND VALIDATION METHODS ========================== */
 
     /**
      * Checks if the given user input is a valid main menu command (start or exit).
@@ -99,6 +130,17 @@ public class CommandProcessor {
     }
 
     /* ========================== HANDLER METHODS ========================== */
+
+     /**
+     * Handles the player's movement command.
+     * @param userInput
+     * @return
+     */
+    private boolean handleMovementCommand(String userInput) {
+        Room currentRoom = playersManager.getPlayer().getCurrentRoom();
+        movePlayer(roomsManager.getRoomExitId(currentRoom.getRoomId(), userInput), currentRoom);
+        return true;
+    }
 
      // Exits the game.
      private void handleExitGame() {
@@ -170,7 +212,59 @@ public class CommandProcessor {
         view.println("Welcome, " + playersManager.getPlayer().getPlayerName().toUpperCase() + view.RESET + "!\n");
     }
 
+     // Displays the starting room and its description.
+     private void getStartingRoom() {
+        view.showEventLine();
+        playersManager.setCurrentRoom(roomsManager.getRooms(0));
+        playersManager.getPlayer().getCurrentRoom().setHasVisited(true);
+        displayStartingRoomDetails();
+    }
+
+    // Displays the room details and command options.
+    private void displayStartingRoomDetails() {
+        Room startingRoom = playersManager.getPlayer().getCurrentRoom();
+        view.println("Location: " + view.YELLOW + startingRoom.getRoomName() + view.RESET + "\n");
+        view.println(startingRoom.getRoomDescription());
+        view.showCommandOptions();
+    }
+
+
     /* ========================== MOVEMENT METHOD ========================== */
+
+     /**
+     * Moves the player to the next room based on the given exit id.
+     * @param nextRoomId
+     * @param currentRoom
+     */
+    private void movePlayer(int nextRoomId, Room currentRoom) {
+        if (nextRoomId == 0) {
+            view.printError(NO_EXIT_MESSAGE);
+            processPlayerCommand(getUserInput());
+            return;
+        }
+
+        Room nextRoom = roomsManager.findRoomById(nextRoomId);
+
+        if (nextRoom != null) {
+            playersManager.getPlayer().getPreviousRoomsList().add(playersManager.getPlayer().getCurrentRoom());
+            playersManager.setCurrentRoom(nextRoom);
+            currentRoom.setHasVisited(true);
+            view.showEventLine();
+            if (playersManager.indicateNewRoom(nextRoom) == true) {
+                view.println("Location: " + view.YELLOW + nextRoom.getRoomName() + view.RESET + "\n");
+                view.println(nextRoom.getRoomDescription());
+            } else {
+                view.println(view.YELLOW + "New Location: " + nextRoom.getRoomName() + view.RESET + "\n");
+                view.println(nextRoom.getRoomDescription());
+            }
+            view.showCommandOptions();
+            processPlayerCommand(getUserInput());
+        }
+
+        else {
+            view.printError(NO_EXIT_MESSAGE);
+        }
+    }
 
     /* ========================== PUZZLE METHODS ========================== */
 
