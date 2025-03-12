@@ -15,5 +15,6 @@ public class Controller {
     // Method to start the game cycle
     public void startGameCycle() {
         commandProcessor.gameOpening();
+        commandProcessor.processInitialCommand();
     }  
 }
