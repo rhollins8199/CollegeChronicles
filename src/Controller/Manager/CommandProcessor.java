@@ -35,6 +35,7 @@ public class CommandProcessor {
     private final Scanner scanner;
     private final PlayersManager playersManager;
     private final RoomsManager roomsManager;
+    private final ItemsManager itemsManager;
 
      // Constructor
      public CommandProcessor(View view, Reader reader, Scanner scanner, Player player) {
@@ -42,6 +43,7 @@ public class CommandProcessor {
         this.scanner = scanner;
         this.playersManager = new PlayersManager(player);
         this.roomsManager = new RoomsManager(reader.loadRoomsFromFile());
+        this.itemsManager = new ItemsManager(reader.loadItemsFromFile());
     }
 
     // User Input Tracking
@@ -52,6 +54,7 @@ public class CommandProcessor {
     // Starts and initializes the game.
     public void gameOpening() {
         view.showGameIntro();
+        itemsManager.startRandomPlacementTask();
     }
 
     // Processes the initial command entered by the user.
@@ -157,6 +160,7 @@ public class CommandProcessor {
 
      // Exits the game.
      private void handleExitGame() {
+        itemsManager.stopRandomPlacementTask();
         scanner.close();
         System.exit(0);
     }
@@ -240,7 +244,6 @@ public class CommandProcessor {
         view.println(startingRoom.getRoomDescription());
         view.showCommandOptions();
     }
-
 
     /* ========================== MOVEMENT METHOD ========================== */
 
