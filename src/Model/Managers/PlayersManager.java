@@ -5,7 +5,6 @@
  package Model.Managers;
 
  import Model.Player;
-
  public class PlayersManager {
  
      // Dependencies
