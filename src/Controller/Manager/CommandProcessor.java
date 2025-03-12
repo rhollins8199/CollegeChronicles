@@ -24,6 +24,7 @@ public class CommandProcessor {
     private static final String START_COMMAND = "start";
     private static final String EXIT_COMMAND = "exit";
     private final String[] VALID_MAIN_MENU_COMMANDS = { START_COMMAND, EXIT_COMMAND };
+    private final String[] VALID_HELP_COMMANDS = { "h", "help" };
     private final String[] VALID_MOVEMENT_COMMANDS = { "north", "n", "south", "s", "east", "e", "west", "w" };
     private static final String INVALID_MENU_COMMAND_MESSAGE = "\nInvalid command. Please enter 'start' or 'exit'.";
     private static final String INVALID_COMMAND_MESSAGE = "\nInvalid command. Please enter 'h' for help.";
@@ -105,6 +106,8 @@ public class CommandProcessor {
             handleExitGame(); 
         }  else if (java.util.Arrays.asList(VALID_MOVEMENT_COMMANDS).contains(userInput)) {
             handleMovementCommand(userInput);
+        } else if (java.util.Arrays.asList(VALID_HELP_COMMANDS).contains(userInput)) {
+            handleHelpCommand();
         } else {
             view.printError(INVALID_COMMAND_MESSAGE);
         }
@@ -130,6 +133,16 @@ public class CommandProcessor {
     }
 
     /* ========================== HANDLER METHODS ========================== */
+
+     // Displays the full list of commands and instructions.
+     private void handleHelpCommand() {
+        view.showFullCommandsAndInstructions();
+        enterToContinue();
+        view.showEventLine();
+        view.println("Location: " + view.YELLOW + playersManager.getPlayer().getCurrentRoom().getRoomName() + view.RESET + "\n");
+        view.println(playersManager.getPlayer().getCurrentRoom().getRoomDescription());
+        view.showCommandOptions();
+    }
 
      /**
      * Handles the player's movement command.
