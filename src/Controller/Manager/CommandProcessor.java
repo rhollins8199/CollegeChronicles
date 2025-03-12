@@ -26,6 +26,9 @@ public class CommandProcessor {
     private final String[] VALID_MAIN_MENU_COMMANDS = { START_COMMAND, EXIT_COMMAND };
     private final String[] VALID_HELP_COMMANDS = { "h", "help" };
     private static final String[] VALID_INVENTORY_COMMANDS = { "ba", "backpack" };
+    private static final String[] VALID_EXPLORE_COMMANDS = { "ex", "explore" };
+    private static final String[] VALID_INSPECT_COMMANDS = { "in", "inspect" };
+    private static final String[] VALID_PICKUP_COMMANDS = { "pk", "pickup" };
     private final String[] VALID_MOVEMENT_COMMANDS = { "north", "n", "south", "s", "east", "e", "west", "w" };
     private static final String INVALID_MENU_COMMAND_MESSAGE = "\nInvalid command. Please enter 'start' or 'exit'.";
     private static final String INVALID_COMMAND_MESSAGE = "\nInvalid command. Please enter 'h' for help.";
@@ -115,6 +118,12 @@ public class CommandProcessor {
             playersManager.displayReportCard();
         } else if (java.util.Arrays.asList(VALID_MOVEMENT_COMMANDS).contains(userInput)) {
             handleMovementCommand(userInput);
+        } else if (java.util.Arrays.asList(VALID_EXPLORE_COMMANDS).contains(userInput)) {
+            handleExploreCommand(userInput);
+        } else if (isPickupCommand(userInput)) {
+            handlePickupCommand(userInput);
+        } else if (isInspectCommand(userInput)) {
+            handleInspectCommand(userInput);
         } else {
             view.printError(INVALID_COMMAND_MESSAGE);
         }
@@ -139,6 +148,34 @@ public class CommandProcessor {
         return java.util.Arrays.asList(VALID_MAIN_MENU_COMMANDS).contains(userInput);
     }
 
+     /**
+     * Checks if the user input is an inspect command.
+     * @param userInput
+     * @return
+     */
+    private boolean isInspectCommand(String userInput) {
+        for (String command : VALID_INSPECT_COMMANDS) {
+            if (userInput.startsWith(command + " ")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the user input is a pickup command.
+     * @param userInput
+     * @return
+     */
+    private boolean isPickupCommand(String userInput) {
+        for (String command : VALID_PICKUP_COMMANDS) {
+            if (userInput.startsWith(command + " ")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /* ========================== HANDLER METHODS ========================== */
 
      // Displays the full list of commands and instructions.
@@ -160,6 +197,95 @@ public class CommandProcessor {
         Room currentRoom = playersManager.getPlayer().getCurrentRoom();
         movePlayer(roomsManager.getRoomExitId(currentRoom.getRoomId(), userInput), currentRoom);
         return true;
+    }
+
+    /**
+     * Handles the player's explore command.
+     * @param userInput
+     */
+    private void handleExploreCommand(String userInput) {
+        int roomItemCount = itemsManager.getItemCountInRoom(playersManager.getPlayer().getCurrentRoom().getRoomId());
+
+        if (roomItemCount > 0) {
+            if (roomItemCount == 1) {
+                view.println("\nThis room contains " + view.YELLOW + roomItemCount + view.RESET + " scantron.");
+            } else {
+                view.println("\nThis room contains " + view.YELLOW + roomItemCount + view.RESET + " scantrons.");
+            }
+        } else {
+            view.println("\nThis room does not contain any scantrons.");
+        }
+    }
+
+    /**
+     * Handles the player's inspect command.
+     * @param userInput
+     */
+    private void handleInspectCommand(String userInput) {
+        if (isInspectCommand(userInput)) {
+            String itemName = null;
+    
+            for (String command : VALID_INSPECT_COMMANDS) {
+                if (userInput.startsWith(command + " ")) {
+                    itemName = userInput.substring(command.length()).trim();
+                    break;
+                }
+            }
+    
+            boolean itemFound = false;
+    
+            for (Item item : itemsManager.getItems()) {
+                if (item.getItemName().equalsIgnoreCase(itemName) &&
+                    item.getItemId() == playersManager.getPlayer().getCurrentRoom().getRoomId() &&
+                    item.getItemCount() > 0) {
+    
+                    view.println("\n" + item.getItemDescription());
+                    itemFound = true;
+                    break;
+                }
+            }
+    
+            if (!itemFound) {
+                view.println("\nThere are no " + itemName + "s in this room to inspect.");
+            }
+        } else {
+            view.println("\nInvalid inspect command. Use 'inspect [item name]'.");
+        }
+    }
+
+    /** 
+     * Handles the player's pickup command.
+     * @param userInput
+    */
+    private void handlePickupCommand(String userInput) {
+        String itemName = null;
+
+        for (String command : VALID_PICKUP_COMMANDS) {
+            if (userInput.startsWith(command + " ")) {
+                itemName = userInput.substring(command.length()).trim();
+                break;
+            }
+        }
+    
+        boolean itemPickedUp = false;
+    
+        for (Item item : itemsManager.getItems()) {
+            if (item.getItemName().equalsIgnoreCase(itemName)
+                    && item.getItemId() == playersManager.getPlayer().getCurrentRoom().getRoomId() 
+                    && item.getItemCount() > 0) {
+    
+                playersManager.addItemToInventory(item);
+                item.setItemCount(item.getItemCount() - 1);
+                view.println("\nYou picked up the " + itemName + "!");
+                itemPickedUp = true;
+                break;
+            }
+        }
+    
+        if (!itemPickedUp) {
+            view.println("\nThere is no " + itemName + " in this room to pick up.");
+        }
+    
     }
 
      // Exits the game.
