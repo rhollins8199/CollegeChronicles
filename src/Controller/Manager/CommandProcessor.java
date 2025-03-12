@@ -25,6 +25,7 @@ public class CommandProcessor {
     private static final String EXIT_COMMAND = "exit";
     private final String[] VALID_MAIN_MENU_COMMANDS = { START_COMMAND, EXIT_COMMAND };
     private final String[] VALID_HELP_COMMANDS = { "h", "help" };
+    private static final String[] VALID_INVENTORY_COMMANDS = { "ba", "backpack" };
     private final String[] VALID_MOVEMENT_COMMANDS = { "north", "n", "south", "s", "east", "e", "west", "w" };
     private static final String INVALID_MENU_COMMAND_MESSAGE = "\nInvalid command. Please enter 'start' or 'exit'.";
     private static final String INVALID_COMMAND_MESSAGE = "\nInvalid command. Please enter 'h' for help.";
@@ -107,10 +108,13 @@ public class CommandProcessor {
 
         if (userInput.equals(EXIT_COMMAND)) { 
             handleExitGame(); 
-        }  else if (java.util.Arrays.asList(VALID_MOVEMENT_COMMANDS).contains(userInput)) {
-            handleMovementCommand(userInput);
         } else if (java.util.Arrays.asList(VALID_HELP_COMMANDS).contains(userInput)) {
             handleHelpCommand();
+        } else if (java.util.Arrays.asList(VALID_INVENTORY_COMMANDS).contains(userInput)) {
+            playersManager.displayInventory();
+            playersManager.displayReportCard();
+        } else if (java.util.Arrays.asList(VALID_MOVEMENT_COMMANDS).contains(userInput)) {
+            handleMovementCommand(userInput);
         } else {
             view.printError(INVALID_COMMAND_MESSAGE);
         }
