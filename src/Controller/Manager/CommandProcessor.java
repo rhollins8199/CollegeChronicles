@@ -17,7 +17,10 @@ import View.*;
 import Model.*;
 import Model.Managers.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 public class CommandProcessor {
 
     // Constants
@@ -40,6 +43,7 @@ public class CommandProcessor {
     private final PlayersManager playersManager;
     private final RoomsManager roomsManager;
     private final ItemsManager itemsManager;
+    private final PuzzlesManager puzzlesManager;
 
      // Constructor
      public CommandProcessor(View view, Reader reader, Scanner scanner, Player player) {
@@ -48,6 +52,7 @@ public class CommandProcessor {
         this.playersManager = new PlayersManager(player);
         this.roomsManager = new RoomsManager(reader.loadRoomsFromFile());
         this.itemsManager = new ItemsManager(reader.loadItemsFromFile());
+        this.puzzlesManager = new PuzzlesManager(reader.loadPuzzlesFromFile());
     }
 
     // User Input Tracking
@@ -403,6 +408,7 @@ public class CommandProcessor {
                 view.println(view.YELLOW + "New Location: " + nextRoom.getRoomName() + view.RESET + "\n");
                 view.println(nextRoom.getRoomDescription());
             }
+            handlePuzzles(nextRoom);
             view.showCommandOptions();
             processPlayerCommand(getUserInput());
         }
@@ -414,5 +420,125 @@ public class CommandProcessor {
 
     /* ========================== PUZZLE METHODS ========================== */
 
+    /**
+     * Filters puzzles by type and checks puzzle requirements.
+     * @param currentRoom
+     */
+    private void handlePuzzles(Room currentRoom) {
+        List<Puzzle> puzzles = puzzlesManager.getPuzzlesByRoomId(currentRoom.getRoomId());
+
+    List<Puzzle> quizzes = puzzles.stream()
+            .filter(p -> "Quiz".equals(p.getPuzzleType()))
+            .filter(p -> !p.getIsSolved())
+            .collect(Collectors.toList());
+
+    List<Puzzle> exams = puzzles.stream()
+            .filter(p -> "Exam".equals(p.getPuzzleType()))
+            .filter(p -> !p.getIsSolved())
+            .collect(Collectors.toList());
+
+    int playerScantrons = playersManager.getPlayer().getInventory().size();
+
+    if (!quizzes.isEmpty()) {
+        boolean hasEnoughScantrons = puzzlesManager.checkScantronRequirements(playerScantrons, "quiz");
+
+        if (!hasEnoughScantrons) {
+            return; 
+        }
+
+        presentPuzzles(quizzes, currentRoom, "quiz");
+        return; 
+    }
+
+    // Only check for exams if all quizzes are solved
+    if (!exams.isEmpty() && quizzes.stream().allMatch(puzzle -> puzzle.getIsSolved())) {
+        boolean hasEnoughScantrons = puzzlesManager.checkScantronRequirements(playerScantrons, "exam");
+
+        if (!hasEnoughScantrons) {
+            return;  // Stops here so only exam message is printed
+        }
+
+        presentPuzzles(exams, currentRoom, "exam");
+    }
+}
     
+    /**
+     * Displays puzzle questions.
+     * @param puzzles
+     * @param currentRoom
+     * @param type
+     */
+    private void presentPuzzles(List<Puzzle> puzzles, Room currentRoom, String type) {
+    int totalQuestions = 0;
+    List<Puzzle> selectedPuzzles = new ArrayList<>();
+
+    if (type.equals("quiz")) {
+        playersManager.deleteItemFromInventory("scantron");
+        view.println("\nComplete the 3-question quiz:");
+        totalQuestions = Math.min(3, puzzles.size()); // Prevent out-of-bounds errors
+        selectedPuzzles = new ArrayList<>(puzzles.subList(0, totalQuestions));
+    } else if (type.equals("exam")) {
+        view.println("\nAre you ready to take the exam? (yes/no)");
+        String response = getUserInput();
+        if (!response.equalsIgnoreCase("yes")) {
+            view.println("\nYou chose not to take the exam right now.");
+            return;
+        }
+
+        playersManager.deleteItemFromInventory("scantron"); // Remove scantrons once
+        playersManager.deleteItemFromInventory("scantron"); 
+
+        view.println("\nComplete the 2-question exam:");
+        totalQuestions = Math.min(2, puzzles.size());
+        selectedPuzzles = new ArrayList<>(puzzles.subList(0, totalQuestions));
+    }
+
+    int questionCount = 0;
+    int numOfCorrectAnswers = 0;
+
+    for (int i = 0; i < totalQuestions; i++) {
+        Puzzle puzzle = selectedPuzzles.get(i);
+
+        view.println("\n" + puzzle.getPuzzleQuestion());
+        view.println("\n   A) " + puzzle.getOptionA());
+        view.println("   B) " + puzzle.getOptionB());
+        view.println("   C) " + puzzle.getOptionC());
+        view.println("   D) " + puzzle.getOptionD() + "\n");
+        view.print("Enter answer here: ");
+        
+        int correct = evaluateAnswer(puzzle);
+        numOfCorrectAnswers += correct;
+        puzzle.setIsSolved(true); // Ensure the puzzle is marked as solved
+        questionCount++;
+    }
+
+    double gradePercentage = (numOfCorrectAnswers / (double) questionCount) * 100;
+    String letterGrade = playersManager.getLetterGrade(gradePercentage);
+    
+    playersManager.recordGrade(currentRoom.getRoomName(), letterGrade);
+    playersManager.calculateGpa();
+
+    view.println("\nYou answered " + view.GREEN + numOfCorrectAnswers + view.RESET + " out of " + questionCount + " questions correctly.");
+    scanner.nextLine();
+    view.showCommandOptions();
+    processPlayerCommand(getUserInput());
+}
+    
+    /**
+     * Gets and checks each answer for the quiz or exam questions.
+     * @param quiz
+     * @return
+     */
+    private int evaluateAnswer(Puzzle quiz) {
+        String answer = scanner.next().trim().toLowerCase();
+        if (answer.equals(quiz.getCorrectAnswer().toLowerCase())) {
+            view.println(view.GREEN + "\nCorrect!" + view.RESET);
+            return 1;
+
+        } else {
+            view.println(view.RED + "\nIncorrect. The correct answer is " + quiz.getCorrectAnswer() + "." + view.RESET);
+            return 0;
+        }
+    }
+
 }
