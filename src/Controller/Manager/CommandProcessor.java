@@ -297,6 +297,14 @@ public class CommandProcessor {
      private void handleExitGame() {
         itemsManager.stopRandomPlacementTask();
         scanner.close();
+
+        if (playersManager.getPlayer().getGpa() <= 2.9) {
+            view.showDropoutExit();
+        }
+        else if (playersManager.getPlayer().getGpa() <= 3.9) {
+            view.showGoodStandingExit();
+        }
+
         System.exit(0);
     }
 
@@ -378,6 +386,19 @@ public class CommandProcessor {
         view.println("Location: " + view.YELLOW + startingRoom.getRoomName() + view.RESET + "\n");
         view.println(startingRoom.getRoomDescription());
         view.showCommandOptions();
+    }
+
+    /**
+     * Checks the player's GPA and exits the game if it is 4.0 or higher.
+     * @param gpa
+     */
+    private void checkGpa(double gpa) {
+        if (playersManager.getPlayer().getGpa() >= 4.0) {
+            view.showGraduatingExit();
+            scanner.close();
+            System.exit(0);
+        }
+
     }
 
     /* ========================== MOVEMENT METHOD ========================== */
@@ -517,6 +538,8 @@ public class CommandProcessor {
     
     playersManager.recordGrade(currentRoom.getRoomName(), letterGrade);
     playersManager.calculateGpa();
+
+    checkGpa(playersManager.getPlayer().getGpa());
 
     view.println("\nYou answered " + view.GREEN + numOfCorrectAnswers + view.RESET + " out of " + questionCount + " questions correctly.");
     scanner.nextLine();
